@@ -186,7 +186,7 @@ def identify_ball_color(image_path: str):
 
     dominant_colors = find_dominant_color(preprocessed_img, k=3)
     plot_colors(dominant_colors)
-    print(dominant_colors)
+    # print(dominant_colors)
 
     dominant_color = dominant_colors[0]
     new_color_array = [
@@ -197,6 +197,11 @@ def identify_ball_color(image_path: str):
 
     identified_ball = map_color_to_ball(dominant_color)
     return identified_ball, new_color_array
+
+
+def get_color_formatted_text(color):
+    new_array = map(str, map(int, color))
+    return f"\033[48;2;{";".join(new_array)}m!!!\033[0m"
 
 
 def test():
@@ -222,8 +227,7 @@ def test():
     i = 1
     for crop_test in crop_tests:
         expected = crop_test[1]
-        expected_new_array = map(str, ball_colors[expected])
-        expected_formatted = f"\033[48;2;{";".join(expected_new_array)}m!!!\033[0m"
+        expected_formatted = get_color_formatted_text(ball_colors[expected])
         crop_path = f"{crops_dir}/{crop_test[0]}"
 
         result, color = identify_ball_color(crop_path)
