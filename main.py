@@ -172,7 +172,7 @@ def map_color_to_ball(dominant_color):
     min_distance = float('inf')
 
     for ball, color in ball_colors.items():
-        distance = np.linalg.norm(np.array(color_palette[ball]) - dominant_color)
+        distance = np.linalg.norm(np.array(color) - dominant_color)
         if distance < min_distance:
             min_distance = distance
             closest_ball = ball
@@ -184,8 +184,9 @@ def identify_ball_color(image_path: str):
     img = load_image(image_path)
     preprocessed_img = preprocess_image(img)
 
-    dominant_colors = find_dominant_color(preprocessed_img, k=1)
+    dominant_colors = find_dominant_color(preprocessed_img, k=3)
     plot_colors(dominant_colors)
+    print(dominant_colors)
 
     dominant_color = dominant_colors[0]
     new_color_array = [
