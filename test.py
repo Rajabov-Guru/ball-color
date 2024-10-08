@@ -61,10 +61,29 @@ def test_clusters():
 
 
 def test_most_spreaded():
+    passed_tests_counter = 0
+    i = 1
     for crop_test in crop_tests:
+        expected = crop_test[1]
+        expected_formatted = get_color_formatted_text(settings.COLOR_MAP[expected])
+
         crop_path = f"{crops_dir}/{crop_test[0]}"
         most = get_most_spreaded_color(crop_path, 2)
-        print(f"{" - ".join(map(get_color_formatted_text, most))} {crop_test[1]}\n")
+        color = most[0]
+
+        formatted_color = get_color_formatted_text(color)
+        maybe = which_color_is_it(color)
+
+        print(f"{" - ".join(map(get_color_formatted_text, most))}\n")
+        result = maybe
+        sign = "❌"
+        if result == expected:
+            sign = "✅"
+            passed_tests_counter += 1
+        print(
+            f"\n{i} {sign} {crop_test[0]} -> expected: {expected} {expected_formatted}  |  result: {result} {formatted_color}. Maybe: {maybe}\n")
+        i += 1
+    print(f"Passed {passed_tests_counter} test from {len(crop_tests)}")
 
 
 if __name__ == '__main__':
