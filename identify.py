@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from settings import settings
 from utils import which_color_is_it
 
+
 def get_most_spreaded_color(image_path, n):
     img = load_image(image_path)
     image = preprocess_image(img)
@@ -82,8 +83,17 @@ def find_dominant_color(image, k=settings.cluster_amount):
     kmeans = KMeans(n_clusters=k)
     kmeans.fit(pixels)
 
-    colors = kmeans.cluster_centers_
-    return colors
+    dominant_colors = kmeans.cluster_centers_
+
+    labels, counts = np.unique(kmeans.labels_, return_counts=True)
+
+    sorted_indices = np.argsort(-counts)
+
+    top_colors = dominant_colors[sorted_indices[:k]]
+
+    top_colors = top_colors.astype(int)
+
+    return top_colors
 
 
 def plot_colors(colors):
@@ -117,7 +127,7 @@ def identify_ball_color(image_path: str):
 
     dominant_colors = find_dominant_color(preprocessed_img)
     filtered_dominants = []
-
+    # TODO: smart filtering
     for dominant in dominant_colors:
         color = which_color_is_it(dominant)
         if color != "white" and color is not None:

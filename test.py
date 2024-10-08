@@ -87,4 +87,4 @@ def test_most_spreaded():
 
 
 if __name__ == '__main__':
-    test_most_spreaded()
+    test_clusters()
