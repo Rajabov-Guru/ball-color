@@ -141,7 +141,21 @@ def load_image(image_path):
 
 
 def preprocess_image(img, size=(100, 100)):
-    return cv2.resize(img, size)
+    resized = cv2.resize(img, size)
+    height, width, _ = resized.shape
+    square_size = 55
+    # Calculate the top-left corner of the square (center the square)
+    start_x = (width - square_size) // 2
+    start_y = (height - square_size) // 2
+
+    # Crop the square from the image
+    cropped_image = resized[start_y:start_y + square_size, start_x:start_x + square_size]
+    # Save or display the cropped image
+    cv2.imwrite('cropped_billiard_ball.jpg', cropped_image)
+    cv2.imshow('Cropped Image', cropped_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return cropped_image
 
 
 def find_dominant_color(image, k=3):
@@ -184,8 +198,14 @@ def identify_ball_color(image_path: str):
     img = load_image(image_path)
     preprocessed_img = preprocess_image(img)
 
-    dominant_colors = find_dominant_color(preprocessed_img, k=3)
+    dominant_colors = find_dominant_color(preprocessed_img, k=2)
     plot_colors(dominant_colors)
+    array = []
+    for dominant in dominant_colors:
+        formatted = get_color_formatted_text(dominant.tolist())
+        array.append(formatted)
+
+    print(", ".join(array))
     # print(dominant_colors)
 
     dominant_color = dominant_colors[0]
@@ -201,7 +221,7 @@ def identify_ball_color(image_path: str):
 
 def get_color_formatted_text(color):
     new_array = map(str, map(int, color))
-    return f"\033[48;2;{";".join(new_array)}m!!!\033[0m"
+    return f"\033[48;2;{";".join(new_array)}m  \033[0m"
 
 
 def test():
@@ -231,7 +251,7 @@ def test():
         crop_path = f"{crops_dir}/{crop_test[0]}"
 
         result, color = identify_ball_color(crop_path)
-        formatted_color = f"\033[48;2;{";".join(color)}m!!!\033[0m"
+        formatted_color = get_color_formatted_text(color)
         color_tuple = (int(color[0]), int(color[1]), int(color[2]))
         maybe = which_color_is_it(color_tuple)
 
