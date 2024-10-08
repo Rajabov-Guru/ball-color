@@ -177,7 +177,7 @@ def plot_colors(colors):
 
     plt.axis('off')
     plt.imshow(rect)
-    # plt.show()
+    plt.show()
 
 
 def map_color_to_ball(dominant_color):
