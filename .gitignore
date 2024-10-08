@@ -5,6 +5,5 @@ htmlcov
 .ruff_cache
 .idea
 *__pycache__
-test.py
 .env
 venv
