@@ -23,15 +23,17 @@ def preprocess_image(img, size=(settings.crop_size, settings.crop_size)):
     # Crop the square from the image
     cropped_image = resized[start_y:start_y + square_size, start_x:start_x + square_size]
 
+    result_image = cropped_image
+
     if settings.show_mini_crop:
         # Save or display the cropped image
-        cv2.imwrite('cropped_billiard_ball.jpg', cropped_image)
+        cv2.imwrite('cropped_billiard_ball.jpg', result_image)
         cv2.namedWindow('Cropped Image', cv2.WINDOW_GUI_EXPANDED)
-        cv2.imshow('Cropped Image', cropped_image)
+        cv2.imshow('Cropped Image', result_image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    return cropped_image
+    return result_image
 
 
 def find_dominant_color(image, k=settings.cluster_amount):
