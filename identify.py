@@ -5,6 +5,36 @@ import matplotlib.pyplot as plt
 from settings import settings
 from utils import which_color_is_it
 
+def get_most_spreaded_color(image_path, n):
+    img = load_image(image_path)
+    image = preprocess_image(img)
+
+    # Reshape the image to a 2D array of pixels (height*width, 3)
+    pixels = image.reshape(-1, 3)
+
+    # Use K-means clustering to cluster the pixel intensities
+    kmeans = KMeans(n_clusters=5)
+    kmeans.fit(pixels)
+
+    # Get the cluster centers (dominant colors)
+    dominant_colors = kmeans.cluster_centers_
+
+    # Get the number of pixels in each cluster
+    labels, counts = np.unique(kmeans.labels_, return_counts=True)
+
+    # Sort counts in descending order and get the indices of the sorted order
+    sorted_indices = np.argsort(-counts)
+
+    # Select the top 3 most spread colors
+    top_colors = dominant_colors[sorted_indices[:n]]
+
+    # Convert to int and return the top 3 most spread colors
+    top_colors = top_colors.astype(int)
+
+    # TODO: filter top colors
+
+    return top_colors
+
 
 def load_image(image_path):
     img = cv2.imread(image_path)
@@ -12,16 +42,26 @@ def load_image(image_path):
     return img
 
 
-def preprocess_image(img, size=(settings.crop_size, settings.crop_size)):
+def resize_image(img, size=(settings.crop_size, settings.crop_size)):
     resized = cv2.resize(img, size)
-    height, width, _ = resized.shape
+    return resized
+
+
+def mini_crop_image(image):
+    height, width, _ = image.shape
     square_size = settings.mini_crop_size
     # Calculate the top-left corner of the square (center the square)
     start_x = (width - square_size) // 2
     start_y = (height - square_size) // 2
 
     # Crop the square from the image
-    cropped_image = resized[start_y:start_y + square_size, start_x:start_x + square_size]
+    cropped_image = image[start_y:start_y + square_size, start_x:start_x + square_size]
+    return cropped_image
+
+
+def preprocess_image(img):
+    resized = resize_image(img)
+    cropped_image = mini_crop_image(resized)
 
     result_image = cropped_image
 
