@@ -28,6 +28,6 @@ def which_color_is_it(color):
         if result and distance <= min_distance:
             matched = color_name
             min_distance = distance
-    return matched
+    return matched, min_distance
 
 

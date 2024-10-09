@@ -7,3 +7,6 @@ htmlcov
 *__pycache__
 .env
 venv
+/crops/
+/failed_crops/
+/videos/

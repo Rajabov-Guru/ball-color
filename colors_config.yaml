@@ -1,0 +1,14 @@
+ball_colors_dict_all_rgb:
+  - [221,206,153, 'white']
+  - [234, 173, 78, 'yellow']
+  - [61,96,158, 'blue']
+  - [201, 74, 77, 'red']
+  - [230, 122, 126, 'pink']
+  - [229, 117, 66, 'orange']
+  - [71,107,93, 'green']
+  - [180,117,67, 'brown']
+  - [70,57,54, 'black']
+
+glove_colors_dict_all_rgb:
+  - [221,206,153, 'white']
+  - [70,57,54, 'black']

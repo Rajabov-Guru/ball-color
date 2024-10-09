@@ -60,11 +60,23 @@ def mini_crop_image(image):
     return cropped_image
 
 
+def get_mask(crop):
+    hh, ww = crop.shape[:2]
+    yc = hh // 2
+    xc = ww // 2
+    radius = round(ww / 2) - 10
+    mask = np.zeros_like(crop)
+    mask = cv2.circle(mask, (xc, yc), radius, (255, 255, 255), -1)
+    result = crop
+    result[mask == 0] = 0
+    return result
+
+
 def preprocess_image(img):
     resized = resize_image(img)
-    cropped_image = mini_crop_image(resized)
+    masked = get_mask(resized)
 
-    result_image = cropped_image
+    result_image = masked
 
     if settings.show_mini_crop:
         # Save or display the cropped image
@@ -78,22 +90,36 @@ def preprocess_image(img):
 
 
 def find_dominant_color(image, k=settings.cluster_amount):
-    pixels = image.reshape(-1, 3)
+    pixels = np.float32(image.reshape(-1, 3))
+    pixels = pixels[np.all(pixels != 0, axis=1)]
 
-    kmeans = KMeans(n_clusters=k)
-    kmeans.fit(pixels)
+    n_colors = k
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, .1)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    _, labels, palette = cv2.kmeans(pixels, n_colors, None, criteria, 10, flags)
+    _, counts = np.unique(labels, return_counts=True)
+    palette_and_counts = list(zip(palette, counts))
 
-    dominant_colors = kmeans.cluster_centers_
+    palette_and_counts.sort(key=lambda x: x[1], reverse=True)
 
-    labels, counts = np.unique(kmeans.labels_, return_counts=True)
+    sorted_palette, sorted_counts = zip(*palette_and_counts)
+    dominant = sorted_palette[:k]
+    return dominant
 
-    sorted_indices = np.argsort(-counts)
-
-    top_colors = dominant_colors[sorted_indices[:k]]
-
-    top_colors = top_colors.astype(int)
-
-    return top_colors
+    # kmeans = KMeans(n_clusters=k)
+    # kmeans.fit(pixels)
+    #
+    # dominant_colors = kmeans.cluster_centers_
+    #
+    # labels, counts = np.unique(kmeans.labels_, return_counts=True)
+    #
+    # sorted_indices = np.argsort(-counts)
+    #
+    # top_colors = dominant_colors[sorted_indices[:k]]
+    #
+    # top_colors = top_colors.astype(int)
+    #
+    # return top_colors
 
 
 def plot_colors(colors):
@@ -121,17 +147,38 @@ def map_color_to_ball(dominant_color):
     return closest_ball
 
 
-def identify_ball_color(image_path: str):
-    img = load_image(image_path)
-    preprocessed_img = preprocess_image(img)
+def identify_ball_color(image_path: str = None, image_crop = None):
+    if image_crop is None and image_path:
+        img = load_image(image_path)
+    else:
+        img = image_crop
 
-    dominant_colors = find_dominant_color(preprocessed_img)
+    img = preprocess_image(img)
+
+    dominant_colors = find_dominant_color(img)
     filtered_dominants = []
-    # TODO: smart filtering
+    white_dominants = []
+    color_set = set()
+
     for dominant in dominant_colors:
-        color = which_color_is_it(dominant)
-        if color != "white" and color is not None:
+        color, _ = which_color_is_it(dominant)
+        if color == 'white':
+            white_dominants.append(dominant)
+            continue
+        if color not in color_set and color is not None:
             filtered_dominants.append(dominant)
+            color_set.add(color)
+
+    if len(white_dominants) > 0 and len(filtered_dominants) == 0:
+        min_distance = 1000
+        true_white = white_dominants[0]
+        for dominant in white_dominants:
+            color, distance = which_color_is_it(dominant)
+            if distance < min_distance:
+                true_white = dominant
+                min_distance = distance
+
+        filtered_dominants.append(true_white)
 
     if settings.show_plot:
         plot_colors(dominant_colors)

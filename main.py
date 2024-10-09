@@ -1,5 +1,11 @@
+
+import cv2
+
+
+
 def main():
-    print('Hello World')
+    print(cv2.cuda.getCudaEnabledDeviceCount())
+
 
 
 if __name__ == '__main__':

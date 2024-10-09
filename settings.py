@@ -1,10 +1,13 @@
 class Settings:
     show_mini_crop = False
     show_plot = False
+    output_dominant_colors = False
+
     test_crops_dir = "crops"
+    test_color = "blue"
 
     crop_size = 100
-    mini_crop_size = 55
+    mini_crop_size = 60
     cluster_amount = 2
 
     COLOR_MAP = {
