@@ -1,40 +1,8 @@
 import cv2
 import numpy as np
-from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 from settings import settings
 from utils import which_color_is_it
-
-
-def get_most_spreaded_color(image_path, n):
-    img = load_image(image_path)
-    image = preprocess_image(img)
-
-    # Reshape the image to a 2D array of pixels (height*width, 3)
-    pixels = image.reshape(-1, 3)
-
-    # Use K-means clustering to cluster the pixel intensities
-    kmeans = KMeans(n_clusters=5)
-    kmeans.fit(pixels)
-
-    # Get the cluster centers (dominant colors)
-    dominant_colors = kmeans.cluster_centers_
-
-    # Get the number of pixels in each cluster
-    labels, counts = np.unique(kmeans.labels_, return_counts=True)
-
-    # Sort counts in descending order and get the indices of the sorted order
-    sorted_indices = np.argsort(-counts)
-
-    # Select the top 3 most spread colors
-    top_colors = dominant_colors[sorted_indices[:n]]
-
-    # Convert to int and return the top 3 most spread colors
-    top_colors = top_colors.astype(int)
-
-    # TODO: filter top colors
-
-    return top_colors
 
 
 def load_image(image_path):
@@ -105,21 +73,6 @@ def find_dominant_color(image, k=settings.cluster_amount):
     sorted_palette, sorted_counts = zip(*palette_and_counts)
     dominant = sorted_palette[:k]
     return dominant
-
-    # kmeans = KMeans(n_clusters=k)
-    # kmeans.fit(pixels)
-    #
-    # dominant_colors = kmeans.cluster_centers_
-    #
-    # labels, counts = np.unique(kmeans.labels_, return_counts=True)
-    #
-    # sorted_indices = np.argsort(-counts)
-    #
-    # top_colors = dominant_colors[sorted_indices[:k]]
-    #
-    # top_colors = top_colors.astype(int)
-    #
-    # return top_colors
 
 
 def plot_colors(colors):
