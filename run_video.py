@@ -28,13 +28,13 @@ def color_identification(video_path):
         prev_frame_time = new_frame_time
         fps = int(fps)
         fps = str(fps)
-        frame_skip = 3
+        frame_skip = 1
         if success:
             results = detection(frame, classes=[0], conf=0.6)
             #cv2.imwrite('frame.jpeg', frame)
             for i in range(len(results)):
-                if frame_count % frame_skip != 0:
-                    continue  # Skip detection
+                # if frame_count % frame_skip != 0:
+                #     continue  # Skip detection
 
                 result = results[i]
                 boxes = result.boxes
@@ -46,13 +46,11 @@ def color_identification(video_path):
                     start = time.perf_counter()
                     if names[int(cls)] == 'ball':
                         crop = img[y1:y2, x1:x2].copy()
-                        # color, _, _, _ = identify_ball_color(image_crop=crop)
-                        color = ball_color.get_main_color(crop)
-                        crop2save = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-                        cv2.imwrite(f'crops/{color}/crop_{frame_count}_{box_number}.jpeg', crop2save)
-                        box_number+=1
+                        color, _, _, _ = identify_ball_color(image_crop=crop)
                         # color = ball_color.get_main_color(crop)
-                        #cv2.imwrite(f'cue_ball_crops/crop_{video}_{conf:.2f}.jpeg', crop)
+                        # crop2save = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+                        # cv2.imwrite(f'crops/{color}/crop_{frame_count}_{box_number}.jpeg', crop2save)
+                        box_number += 1
                     # elif names[int(cls)] == 'glove':
                     #     color = glove_color.get_main_color(crop)
                     else:

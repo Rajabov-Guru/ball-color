@@ -13,7 +13,7 @@ class Settings:
 
     crop_size = 100
     mini_crop_size = 60
-    cluster_amount = 3
+    cluster_amount = 2
 
     COLOR_MAP = {
         'red': (201, 10, 60),  # crops/red/crop_783_8.jpeg
