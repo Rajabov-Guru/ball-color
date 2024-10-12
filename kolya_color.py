@@ -17,4 +17,5 @@ data_transforms_val = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
-padding = A.PadIfNeeded(min_height=60, min_width=60, border_mode=cv2.BORDER_CONSTANT)
+# TODO: value ???
+padding = A.PadIfNeeded(min_height=60, min_width=60, border_mode=cv2.BORDER_CONSTANT, value=cv2.BORDER_CONSTANT)
