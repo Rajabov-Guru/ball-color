@@ -47,8 +47,6 @@ def predict_color(img, x1, y1, x2, y2):
         y_pred = best_model_wts(crop)
         predicted = torch.argmax(y_pred, axis=1)
         color = map_dict[predicted.item()]
-        if color.endswith("_str"):
-            color_store[id] = color
     return color
 
 
@@ -62,7 +60,7 @@ def color_identification(video_path):
     new_frame_time = 0
     frame_count = 0
     prevFrame = None
-    max_frame_count = 10
+    max_frame_count = 10000
     while cap.isOpened():
         success, frame = cap.read()
         if not success:
@@ -81,15 +79,13 @@ def color_identification(video_path):
         if len(results) == 0:
             continue
 
-        balls = []  # { id, x, y, w, h, x1, y1, x2, y2, color }
         result = results[0]
         boxes = result.boxes
         names = result.names
-        # ids = result.boxes.id
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         box_number = 1
 
-        calculate = False # frame_count % frame_skip == 0
+        calculate = frame_count % frame_skip == 0
 
         detected_balls = []
         for box, cls, conf in zip(boxes.data, boxes.cls, boxes.conf):
@@ -109,33 +105,25 @@ def color_identification(video_path):
             "balls": detected_balls
         }
         response = requests.post(backend_url, json=payload)
-        print(response.json())
+        tracked_data = response.json()
+        tracked_balls = tracked_data["tracked_balls"]
 
         if calculate:
-            for box, cls, conf in zip(boxes.data, boxes.cls, boxes.conf):
-                x1, y1, x2, y2 = box[:4].int().tolist()
+            for box in tracked_balls:
+                ball_id = box["id"]
+                x1, y1, x2, y2 = [box["x1"], box["y1"], box["x2"], box["y2"]]
                 start = time.perf_counter()
-                stored = False  # id in color_store
-                color = '?'  # color_store.get(id, '?')
-                if names[int(cls)] == 'ball' and calculate and not stored:
-                    crop = img[y1:y2, x1:x2].copy()
-                    # crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-                    crop = padding(image=crop)['image']
-                    crop = PIL.Image.fromarray(crop)
-                    crop = data_transforms_val(crop).unsqueeze(0).to(device)
-
-                    with torch.no_grad():
-                        y_pred = best_model_wts(crop)
-                        predicted = torch.argmax(y_pred, axis=1)
-                        color = map_dict[predicted.item()]
-                        if color.endswith("_str"):
-                            color_store[id] = color
+                stored = ball_id in color_store
+                color = color_store.get(ball_id, '?')
+                if not stored:
+                    color = predict_color(img, x1, y1, x2, y2)
+                    if color.endswith("_str") and ball_id is not None:
+                        color_store[ball_id] = color
 
                     box_number += 1
                 end = time.perf_counter()
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 cv2.putText(frame, f"{color}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
-
 
         cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
 
@@ -143,10 +131,10 @@ def color_identification(video_path):
             frame = prevFrame
         else:
             prevFrame = frame
-        # cv2.imshow("YOLOv8 Detection", frame)
+        cv2.imshow("YOLOv8 Detection", frame)
         frame_count += 1
-        # if cv2.waitKey(1) & 0xFF == ord("q"):
-        #     break
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
 
     cap.release()
     cv2.destroyAllWindows()
