@@ -10,7 +10,7 @@ from ultralytics import YOLO
 import time
 
 
-detection = YOLO('yolov8-n-31.05.24.pt')
+detection = YOLO('detection_model.pt')
 
 map_dict = {
     0: 'yellow',
